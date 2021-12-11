@@ -9,9 +9,9 @@ This plugin is not officially commissioned/supported by Owncast.
 
 ## Main features
 
-- Access to Online and Offline Owncast instances from https://directory.owncast.online/.
+- Access to Online and Offline Owncast instances registered on https://directory.owncast.online/
 - Play Stream
-- Raise view counter
+- Raise viewer counter
 
 ## License
 
