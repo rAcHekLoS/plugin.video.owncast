@@ -5,9 +5,11 @@
 
 import sys
 from urllib.parse import urlencode, parse_qsl
-import directory
+import resources.lib.owncast as owncast
 import xbmcgui
 import xbmcplugin
+import xbmcaddon
+import inputstreamhelper
 
 
 # Get the plugin url in plugin:// notation.
@@ -15,7 +17,7 @@ _url = sys.argv[0]
 # Get the plugin handle as an integer number.
 _handle = int(sys.argv[1])
 
-VIDEOS = directory.owncast_directory()
+VIDEOS = owncast.owncast_directory(_handle)
 
 
 def get_url(**kwargs):
@@ -96,7 +98,7 @@ def list_videos(category):
         # This is mandatory for playable items!
         list_item.setProperty('IsPlayable', 'true')
         # Create a URL for a plugin recursive call.
-        url = get_url(action='play', video=video['video'])
+        url = get_url(action='play', video=video['url'])
         # Add the list item to a virtual Kodi folder.
         # is_folder = False means that this item won't open any sub-list.
         is_folder = False
@@ -111,6 +113,14 @@ def list_videos(category):
 def play_video(path):
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=path)
+
+    addon = xbmcaddon.Addon()
+    use_inputstream = addon.getSetting('use_inputstream')
+    if use_inputstream == 'true':
+        is_helper = inputstreamhelper.Helper('mpd')
+        play_item.setProperty('inputstream', is_helper.inputstream_addon)
+        play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+
     # Pass the item to the Kodi player.
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
@@ -126,7 +136,9 @@ def router(paramstring):
             list_videos(params['category'])
         elif params['action'] == 'play':
             # Play a video from a provided URL.
-            play_video(params['video'])
+            play_video(params['video'] + '/hls/stream.m3u8')
+            # Check for Play and Ping Owncast instance
+            owncast.owncast_ping(params)            
         else:
             raise ValueError('Invalid paramstring: {0}!'.format(paramstring))
     else:

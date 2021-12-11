@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.owncast"
-version="0.1.0"
+version="0.1.1"
 name="Owncast"
 provider-name="rache_klos">
 <requires>
   <import addon="xbmc.python" version="3.0.0"/>
+  <import addon="script.module.inputstreamhelper" version="0.5.0+matrix.1"/>
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
   <provides>video</provides>
 </extension>
 <extension point="xbmc.addon.metadata">
-  <summary lang="en">Owncast Kodi Plugin</summary>
+  <summary lang="en_GB">Owncast Kodi Plugin</summary>
   <description lang="en_GB">An plugin for Kodi mediacenter.</description>
   <disclaimer lang="en_GB">https://owncast.online/</disclaimer>
   <assets>
@@ -20,6 +21,10 @@ provider-name="rache_klos">
     <screenshot>resources\screenshot-02.jpg</screenshot>
     <screenshot>resources\screenshot-03.jpg</screenshot>    
   </assets>
+  <language>en</language>
+  <license>MIT</license>
+  <website>https://owncast.online</website>
+  <source>https://github.com/rAcHekLoS/plugin.video.owncast</source>
   <news>Initial release.</news>
 </extension>
 </addon>

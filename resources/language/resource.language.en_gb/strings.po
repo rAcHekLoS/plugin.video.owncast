@@ -1,0 +1,23 @@
+msgctxt "Addon Summary"
+msgid "Owncast"
+msgstr ""
+
+msgctxt "Addon Description"
+msgid "Owncast Kodi Plugin"
+msgstr ""
+
+msgctxt "Addon Disclaimer"
+msgid "The use of this add-on may not be legal in your country of residence - please check with your local laws before installing."
+msgstr ""
+
+msgctxt "#30001"
+msgid "General"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Show NSFW Content"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Use InputStream Helper"
+msgstr ""
