@@ -18,6 +18,8 @@ _url = sys.argv[0]
 _handle = int(sys.argv[1])
 
 VIDEOS = owncast.owncast_directory(_handle)
+if VIDEOS == False:
+    raise Exception('Can not connect to Owncast directory.')
 
 
 def get_url(**kwargs):
@@ -87,8 +89,8 @@ def list_videos(category):
         list_item.setInfo('video', {'title': video['name'],
                                     'genre': video['genre'],
                                     'tagline': video['title'],
-                                    'plot': video['title'],
-                                    'plotoutline': video['title'],
+                                    'plot': video['description'],
+                                    'plotoutline': video['description'],
                                     'mediatype': 'video'})
         # Set graphics (thumbnail, fanart, banner, poster, landscape etc.) for the list item.
         # Here we use the same image for all items for simplicity's sake.

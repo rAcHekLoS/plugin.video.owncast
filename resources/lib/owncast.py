@@ -8,21 +8,33 @@ import ssl
 def owncast_directory(_handle):
     addon = xbmcaddon.Addon()
     show_nsfw = addon.getSetting('show_nsfw')
+    VIDEOS = {'Live':[], 'Offline':[]}
 
     url = urllib.request.Request("https://directory.owncast.online/api/home", data=None, headers={'User-Agent': xbmc.getUserAgent()})
-    url_open = urllib.request.urlopen(url)
-    data = json.loads(url_open.read())
     
-    VIDEOS = {'Live':[], 'Offline':[]}
+    try:
+        url_open = urllib.request.urlopen(url)
+    except urllib.error.URLError as e:
+        xbmc.log("Owncast Directory Error: " + str(e.reason), level=xbmc.LOGERROR)
+        return False
+
+    data = json.loads(url_open.read())    
 
     for sections in data['sections']:
 
-        for instance in sections['instances']:            
+        for instance in sections['instances']:
+            # Detect trailing slash and remove it
+            if instance['url'].endswith('/'):
+                url = instance['url'][:-1]
+            else:
+                url = instance['url']
+
             instance_entry = {
                 'name': instance['name'],
                 'title': instance['streamTitle'],
-                'url': instance['url'],
-                'thumb': instance['url'] + '/thumbnail.jpg',
+                'description': instance['description'],
+                'url': url,
+                'thumb': url + '/thumbnail.jpg',
                 'genre': instance['tags'][0]['name'] if instance['tags'] else ''
             }
 
@@ -48,9 +60,14 @@ def owncast_ping(params):
                 ctx = ssl.create_default_context()
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
-                url = urllib.request.Request(params['video'] + "/api/ping", data=None, headers={'User-Agent': xbmc.getUserAgent()})
-                urllib.request.urlopen(url, context=ctx)
-                xbmc.log("Owncast", level=xbmc.LOGDEBUG)       
+                ping_url = params['video'] + '/api/ping'
+                url = urllib.request.Request(ping_url, data=None, headers={'User-Agent': xbmc.getUserAgent()})
+                try:
+                    urllib.request.urlopen(url, context=ctx)
+                except urllib.error.URLError as e:
+                    xbmc.log("Owncast Ping Error: " + ping_url + ", " + str(e.reason), level=xbmc.LOGERROR)  
+
+                xbmc.log("Owncast Ping " + ping_url, level=xbmc.LOGDEBUG)       
             else:
                 break     
         else:
