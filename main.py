@@ -43,7 +43,7 @@ def get_videos(category):
 
 def list_categories():
     # Set plugin category.
-    xbmcplugin.setPluginCategory(_handle, 'My Video Collection')
+    xbmcplugin.setPluginCategory(_handle, 'Owncast streams')
     # Set plugin content.
     xbmcplugin.setContent(_handle, 'videos')
     # Get video categories
@@ -53,12 +53,10 @@ def list_categories():
         # Create a list item with a text label and a thumbnail image.
         list_item = xbmcgui.ListItem(label=category)
         # Set graphics (thumbnail, fanart, banner, poster, landscape etc.) for the list item.
-        list_item.setArt({'thumb': VIDEOS[category][0]['thumb'],
-                          'icon': VIDEOS[category][0]['thumb'],
-                          'fanart': VIDEOS[category][0]['thumb']})
+        list_item.setArt({'thumb': VIDEOS[category][0]['thumb']})
         # Set additional info for the list item.
         list_item.setInfo('video', {'title': category,
-                                    'genre': category,
+                                    'plot': category,
                                     'mediatype': 'video'})
         # Create a URL for a plugin recursive call.
         # Example: plugin://plugin.video.example/?action=listing&category=Animals
@@ -89,13 +87,13 @@ def list_videos(category):
         list_item.setInfo('video', {'title': video['name'],
                                     'genre': video['genre'],
                                     'tagline': video['title'],
-                                    'plot': video['description'],
+                                    'plot': '[COLOR blue]' + video['description'] + '[/COLOR]',
                                     'plotoutline': video['description'],
                                     'mediatype': 'video'})
         # Set graphics (thumbnail, fanart, banner, poster, landscape etc.) for the list item.
         # Here we use the same image for all items for simplicity's sake.
         # In a real-life plugin you need to set each image accordingly.
-        list_item.setArt({'thumb': video['thumb'], 'icon': video['thumb'], 'fanart': video['thumb']})
+        list_item.setArt({'thumb': video['thumb']})
         # Set 'IsPlayable' property to 'true'.
         # This is mandatory for playable items!
         list_item.setProperty('IsPlayable', 'true')

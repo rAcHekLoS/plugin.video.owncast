@@ -1,5 +1,6 @@
 import sys
 import urllib.request
+import urllib.parse
 import json
 import xbmcaddon
 import xbmc
@@ -8,6 +9,7 @@ import ssl
 def owncast_directory(_handle):
     addon = xbmcaddon.Addon()
     show_nsfw = addon.getSetting('show_nsfw')
+    live_section = "What's Streaming Now"
     VIDEOS = {'Live':[], 'Offline':[]}
 
     url = urllib.request.Request("https://directory.owncast.online/api/home", data=None, headers={'User-Agent': xbmc.getUserAgent()})
@@ -23,22 +25,22 @@ def owncast_directory(_handle):
     for sections in data['sections']:
 
         for instance in sections['instances']:
-            # Detect trailing slash and remove it
-            if instance['url'].endswith('/'):
-                url = instance['url'][:-1]
-            else:
-                url = instance['url']
+            url = instance['url'][:-1] if instance['url'].endswith('/') else instance['url']
+            lastseentime = urllib.parse.quote_plus(instance['lastSeen'])         
+            thumbnail = url + '/thumbnail.jpg?' + lastseentime if sections['name'] == live_section else url + '/logo'
+
+            genre = ' / '.join(instance_tag['name'] for instance_tag in instance['tags'] if instance_tag['name']) if instance['tags'] else ''
 
             instance_entry = {
                 'name': instance['name'],
                 'title': instance['streamTitle'],
                 'description': instance['description'],
                 'url': url,
-                'thumb': url + '/thumbnail.jpg',
-                'genre': instance['tags'][0]['name'] if instance['tags'] else ''
+                'thumb': thumbnail,
+                'genre': genre + '[CR]' if genre else ''
             }
 
-            if sections['name'] == "What's Streaming Now":
+            if sections['name'] == live_section:
                 if instance['nsfw'] == False:
                     VIDEOS['Live'].append(instance_entry)
                 elif show_nsfw == 'true':
