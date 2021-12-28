@@ -9,6 +9,7 @@ import resources.lib.owncast as owncast
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
+import xbmc
 import inputstreamhelper
 
 
@@ -134,11 +135,12 @@ def router(paramstring):
         if params['action'] == 'listing':
             # Display the list of videos in a provided category.
             list_videos(params['category'])
-        elif params['action'] == 'play':
+        elif params['action'] == 'play':  
             # Play a video from a provided URL.
             play_video(params['video'] + '/hls/stream.m3u8')
             # Check for Play and Ping Owncast instance
-            owncast.owncast_ping(params)            
+            owncast.start_ping(params)        
+            xbmc.log("Start Owncast Stream")          
         else:
             raise ValueError('Invalid paramstring: {0}!'.format(paramstring))
     else:

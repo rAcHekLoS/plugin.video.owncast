@@ -5,6 +5,7 @@ import json
 import xbmcaddon
 import xbmc
 import ssl
+import threading
 
 def owncast_directory(_handle):
     addon = xbmcaddon.Addon()
@@ -53,8 +54,16 @@ def owncast_directory(_handle):
 
     return VIDEOS
 
+
+def start_ping(params):
+    t = threading.Thread(target=owncast_ping, args=(params,))
+    t.daemon = True
+    t.start()
+    return
+
 def owncast_ping(params):
-    while True:
+    xbmc.log("Start Owncast Ping")
+    while True:        
         xbmc.sleep(6000)
         if xbmc.Player().isPlayingVideo():
             playnow = xbmc.Player().getPlayingFile()
@@ -74,3 +83,6 @@ def owncast_ping(params):
                 break     
         else:
             break
+    
+    xbmc.log("Owncast Ping stopped")
+    return
