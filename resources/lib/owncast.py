@@ -7,10 +7,12 @@ import xbmc
 import ssl
 import threading
 
-def owncast_directory(_handle):
+
+def owncast_directory():
     addon = xbmcaddon.Addon()
     show_nsfw = addon.getSetting('show_nsfw')
     live_section = "What's Streaming Now"
+    data = None
     VIDEOS = {'Live':[], 'Offline':[]}
 
     url = urllib.request.Request("https://directory.owncast.online/api/home", data=None, headers={'User-Agent': xbmc.getUserAgent()})
@@ -21,38 +23,39 @@ def owncast_directory(_handle):
         xbmc.log("Owncast Directory Error: " + str(e.reason), level=xbmc.LOGERROR)
         return False
 
-    data = json.loads(url_open.read())    
+    data = json.loads(url_open.read())
+    if data:
+        for sections in data['sections']:
+            for instance in sections['instances']:
+                url = instance['url'][:-1] if instance['url'].endswith('/') else instance['url']
+                lastseentime = urllib.parse.quote_plus(instance['lastSeen'])         
+                thumbnail = url + '/thumbnail.jpg?' + lastseentime if sections['name'] == live_section else url + '/logo'
 
-    for sections in data['sections']:
+                genre = ' / '.join(instance_tag['name'] for instance_tag in instance['tags'] if instance_tag['name']) if instance['tags'] else ''
 
-        for instance in sections['instances']:
-            url = instance['url'][:-1] if instance['url'].endswith('/') else instance['url']
-            lastseentime = urllib.parse.quote_plus(instance['lastSeen'])         
-            thumbnail = url + '/thumbnail.jpg?' + lastseentime if sections['name'] == live_section else url + '/logo'
+                instance_entry = {
+                    'name': instance['name'],
+                    'title': instance['streamTitle'],
+                    'description': instance['description'],
+                    'url': url,
+                    'thumb': thumbnail,
+                    'genre': genre + '[CR]' if genre else ''
+                }
 
-            genre = ' / '.join(instance_tag['name'] for instance_tag in instance['tags'] if instance_tag['name']) if instance['tags'] else ''
+                if sections['name'] == live_section:
+                    if instance['nsfw'] == False:
+                        VIDEOS['Live'].append(instance_entry)
+                    elif show_nsfw == 'true':
+                        VIDEOS['Live'].append(instance_entry)
+                else:
+                    if instance['nsfw'] == False:
+                        VIDEOS['Offline'].append(instance_entry)
+                    elif show_nsfw == 'true':
+                        VIDEOS['Offline'].append(instance_entry)
+        return VIDEOS
 
-            instance_entry = {
-                'name': instance['name'],
-                'title': instance['streamTitle'],
-                'description': instance['description'],
-                'url': url,
-                'thumb': thumbnail,
-                'genre': genre + '[CR]' if genre else ''
-            }
-
-            if sections['name'] == live_section:
-                if instance['nsfw'] == False:
-                    VIDEOS['Live'].append(instance_entry)
-                elif show_nsfw == 'true':
-                    VIDEOS['Live'].append(instance_entry)
-            else:
-                if instance['nsfw'] == False:
-                    VIDEOS['Offline'].append(instance_entry)
-                elif show_nsfw == 'true':
-                    VIDEOS['Offline'].append(instance_entry)
-
-    return VIDEOS
+    if VIDEOS == False:
+        raise Exception('No Data from Owncast Directory')    
 
 
 def start_ping(params):
@@ -60,6 +63,7 @@ def start_ping(params):
     t.daemon = True
     t.start()
     return
+
 
 def owncast_ping(params):
     xbmc.log("Start Owncast Ping")

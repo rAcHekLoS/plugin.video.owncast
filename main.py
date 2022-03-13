@@ -1,7 +1,6 @@
 # Module: main
 # Author: rache_klos
-# Created on: 04.12.2021
-# License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
+# Created on: 16.01.2021
 
 import sys
 from urllib.parse import urlencode, parse_qsl
@@ -18,27 +17,15 @@ _url = sys.argv[0]
 # Get the plugin handle as an integer number.
 _handle = int(sys.argv[1])
 
-VIDEOS = owncast.owncast_directory(_handle)
-if VIDEOS == False:
-    raise Exception('Can not connect to Owncast directory.')
-
 
 def get_url(**kwargs):
-    """
-    Create a URL for calling the plugin recursively from the given set of keyword arguments.
-
-    :param kwargs: "argument=value" pairs
-    :return: plugin call URL
-    :rtype: str
-    """
+    # Create a URL for calling the plugin recursively from the given set of keyword arguments.
     return '{0}?{1}'.format(_url, urlencode(kwargs))
 
 
-def get_categories():
-    return VIDEOS.keys()
-
-
 def get_videos(category):
+    # Call Owncast global directory
+    VIDEOS = owncast.owncast_directory()
     return VIDEOS[category]
 
 
@@ -47,8 +34,10 @@ def list_categories():
     xbmcplugin.setPluginCategory(_handle, 'Owncast streams')
     # Set plugin content.
     xbmcplugin.setContent(_handle, 'videos')
+    # Call Owncast global directory
+    VIDEOS = owncast.owncast_directory()
     # Get video categories
-    categories = get_categories()
+    categories = VIDEOS.keys()
     # Iterate through categories
     for category in categories:
         # Create a list item with a text label and a thumbnail image.
@@ -60,7 +49,6 @@ def list_categories():
                                     'plot': category,
                                     'mediatype': 'video'})
         # Create a URL for a plugin recursive call.
-        # Example: plugin://plugin.video.example/?action=listing&category=Animals
         url = get_url(action='listing', category=category)
         # is_folder = True means that this item opens a sub-list of lower level items.
         is_folder = True
@@ -91,17 +79,13 @@ def list_videos(category):
                                     'plot': '[COLOR blue]' + video['description'] + '[/COLOR]',
                                     'plotoutline': video['description'],
                                     'mediatype': 'video'})
-        # Set graphics (thumbnail, fanart, banner, poster, landscape etc.) for the list item.
-        # Here we use the same image for all items for simplicity's sake.
-        # In a real-life plugin you need to set each image accordingly.
+        # Set graphics for the list item.
         list_item.setArt({'thumb': video['thumb']})
         # Set 'IsPlayable' property to 'true'.
-        # This is mandatory for playable items!
         list_item.setProperty('IsPlayable', 'true')
         # Create a URL for a plugin recursive call.
         url = get_url(action='play', video=video['url'])
         # Add the list item to a virtual Kodi folder.
-        # is_folder = False means that this item won't open any sub-list.
         is_folder = False
         # Add our item to the Kodi virtual folder listing.
         xbmcplugin.addDirectoryItem(_handle, url, list_item, is_folder)
@@ -145,6 +129,7 @@ def router(paramstring):
             raise ValueError('Invalid paramstring: {0}!'.format(paramstring))
     else:
         list_categories()
+
 
 if __name__ == '__main__':
     # Call the router function and pass the plugin call parameters to it.
